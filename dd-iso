@@ -1,0 +1,227 @@
+#!/bin/bash
+script_name='DD-ISO'
+version=20140113
+by='Scott Garrett <mail (at) exovenom.net>'
+desc='A simple GUI frontend to dd to write ISO disc images to USB drives.'
+
+
+
+###############
+### Globals ###
+###############
+
+# We need to make sure these options are enabled for fancy globs to work properly.
+shopt -s extglob globstar
+
+dd_output_file="/tmp/$script_name-$USER-$(date +%s).log"
+
+
+
+##################
+### Funuctions ###
+##################
+
+# Returns a list of all USB block devices.
+list_devices () {
+    local none_found=1
+    # If there are USB drives plugged in, iterate through them.
+    for device in /dev/disk/by-path/*-usb-*; do
+        # Skip the partitions.
+        [[ $device == *-part? ]] && continue
+        # Print the absolute path to the device.
+        readlink -f "$device"
+        none_found=0
+    done | sort # Sort the list when we're done.
+    # Set return status in case someone wants to use this function in a
+    # conditional.
+    return $none_found
+}
+
+# Returns a list of all partitions on a particular USB device by path and name,
+# delimited by a tab. If a device does not have a name, its path will be given,
+# instead.
+#
+# Positional arguments:
+#   $1 - Absolute path to block device
+#
+list_partitions_of () {
+    local none_found=1
+    # Iterate through the list of disk partition labels.
+    for item in /dev/disk/by-label/*; do
+        # Get its absolute path.
+        local real_path=$(readlink -f "$item")
+        # Skip it if it doesn't belong to the device specified in $1.
+        [[ $real_path != @($1?|$1) ]] && continue
+        # Extract only the label part of the path.
+        local part_name=$(basename "$item")
+        # Print the path and and the label, separated by a tab.
+        # Since weird characters like spaces are escaped in the file name, we
+        # let printf translate them for us.
+        printf -- "%s\t${part_name:-$1}\n" "$real_path"
+        none_found=0
+    done | sort # Sort the list when we're done.
+    return $none_found
+}
+
+# Prompt the user for a USB drive to do something with.
+# Returns the path of selected device.
+ask_for_usb_drive () {
+    # We need an empty array to put the device and partition columns in to
+    # feed to Zenity.
+    local columns=()
+    # Iterate through the list of USB drive devices.
+    while read -r device; do
+        # Add the device to a row.  
+        columns+=("$device" ' ')
+        while IFS=$'\t' read -r partition name; do
+            # Add rows with the path and name of each partition.
+            columns+=(' ' "$partition - $name")
+        done < <(list_partitions_of "$device")
+    done < <(list_devices)
+    # Complain and exit if the array is empty - we didn't find any drives.
+    if [[ -z $columns ]]; then
+        zenity --error \
+            --title "$script_name: Error" \
+            --text "There doesn't seem to be any USB drives connected to your computer."
+        exit 1
+    fi
+    # Otherwise, ask the user to choose a device.
+    local device=$(zenity --list \
+        --title "$script_name: Step 1: Choose a Target" \
+        --text 'Which USB drive would you like to write the image to?' \
+        --print-column ALL \
+        --separator ' ' \
+        --column 'Device' --column 'Existing Partitions' \
+        "${columns[@]}")
+    # Get rid of pesky spaces in the selection.
+    device=${device// /}
+    # If the user selected a partition, make sure to extract the parent device
+    # path from that.
+    [[ $device == *-* ]] && device=${device%?-*}
+    # Set error status if the user bailed.
+    [[ -z $device ]] && return 1
+    # Otherwise, print the selected device.
+    echo "$device"; return 0
+}
+
+# Prompt the user to select an ISO disc image.
+ask_for_iso_file () {
+    zenity --file-selection \
+        --title "$script_name: Step 2: Choose a Disk Image File" \
+        --file-filter '*.iso'
+}
+
+# Prompt the user for a confirmation.
+# Positional arguments:
+#   $1 - disc image file
+#   $2 - Path to USB device
+#
+ask_for_confirmation () {
+    zenity --question \
+        --title "$script_name: Step 3: Confirm Selection" \
+        --text "You have chosen to write the disc image file:
+
+$1
+
+to $2.
+
+This will overwrite the contents of the drive with the disc image.
+Do you wish to proceed?"
+}
+
+# Figure out what GUI the user has to prompt for root privilages.
+for gui_su in kdesu gksudo gksu; do
+    # `type -p` is a script-friendly way of doing `which EXECUTABLE`.
+    gui_su=$(type -p $gui_su)
+    # If we found a GUI to prompt for root, bail out of the loop.
+    [[ $gui_su ]] && break
+done
+# If we didn't find one and we're not already running as root, complain and
+# exit.
+if [[ -z $gui_su && $UID != 0 ]]; then
+    zenity --error \
+        --title "$script_name: Privilage Error" \
+        --text 'I need root privilages to write disc images to USB devices, but cannot find gtksudo, gtksu, or kdesu.'
+    exit 1
+fi
+
+
+
+############
+### Main ###
+############
+
+# Lazily handle arguments passed to the script.
+case "$1" in
+    --write)
+        # Some of the GUIs to run something as root eat program output, so we
+        # will handle this as an argument and call the script as root with it
+        # later.
+        # And the user can conviniently use it themselves on the command line
+        # if they want to.  What a deal!
+
+        [[ $4 ]] && dd_output_file=$4
+
+        # Complain and exit if we're not already root.
+        if ((UID != 0)); then
+            echo "$script_name: this must be executed as root." | tee "$dd_output_file"
+            exit 1
+        fi
+        
+        # Write the input file to a block device with dd and print an EOF when
+        # done.  dd output is redirected to the $dd_output_file.
+        dd if="$2" of="$3" bs=1M &> "$dd_output_file"
+        printf -- '\x04'
+        exit
+        ;;
+    -h|--help)
+        # Handle -h/--help flag and show info about the script.  A heredoc
+        # replaces many `echo`-s here.
+        cat <<HELP_EOF
+$script_name $version - $by
+$desc
+Run without arguments to use the Zenity GUI.
+
+-h --help
+    This message.
+
+--write DISC_IMAGE TARGET_DEVICE [LOG_FILE]
+    Directly write DISC_IMAGE to TARGET_DEVICE with dd.  Requires root.
+    dd output will be written to LOG_FILE, otherwise to '$script_name-$USER-UNIX_TIMESTAMP'.
+
+HELP_EOF
+        exit 1
+        ;;
+esac
+
+# Complain and exit if the user tries to use the GUI without X.
+if [[ -z $DISPLAY ]]; then
+    echo 'You must be run this script in an X session to use the Zenity GUI.'
+    exit 1
+fi
+
+# Ask the user to choose a USB drive and an ISO file; exit if they bail out.
+device=$(ask_for_usb_drive)
+[[ -z $device ]] && exit 1
+
+file=$(ask_for_iso_file)
+[[ -z $file ]] && exit 1
+
+# Are they sure?  
+ask_for_confirmation "$file" "$device" || exit 1
+
+# If so, run this script with the GUI su elevator and show a feedback about
+# the process.  We *could* poll dd to figure out an actual percentage, but
+# that would make things more complicated, so we'll settle for the pulserbar.
+( $gui_su $0 --write "$file" "$device" "$dd_output_file") | zenity --progress \
+    --pulsate --auto-close \
+    --title "$script_name: Writing Image..." \
+    --text "The disc image is being written to ${device}.  This will take a while."
+
+# Give the user the status report from dd.
+zenity --info \
+    --title "$script_name: Result" \
+    --text "$(<"$dd_output_file")"
+
+# Clean up.
+rm "$dd_output_file"
