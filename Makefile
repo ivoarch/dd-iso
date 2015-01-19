@@ -12,7 +12,7 @@ all:
 
 dist:
 	@echo creating dist tarball
-	@tar czf $(PROG)-$(VERSION).tgz $(PROG) README bg.po dd-iso.desktop
+	@tar czf $(PROG)-$(VERSION).tgz $(PROG) README.md bg.po dd-iso.desktop
 
 install:
 	@echo installing all files
