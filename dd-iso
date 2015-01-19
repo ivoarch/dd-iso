@@ -185,7 +185,7 @@ case "$1" in
       echo ""
       echo "--write DISC_IMAGE TARGET_DEVICE [LOG_FILE]"
       echo "$(eval_gettext "Directly write DISC_IMAGE to TARGET_DEVICE with dd.  Requires root.")"
-      echo "$(eval_gettext "dd output will be written to LOG_FILE, otherwise to ")"$script_name-$USER-UNIX_TIMESTAMP
+      echo "$(eval_gettext "dd output will be written to LOG_FILE, otherwise to ")"$script_name-"$USER"-UNIX_TIMESTAMP
       exit 1
       ;;
 esac
@@ -209,7 +209,7 @@ ask_for_confirmation "$file" "$device" || exit 1
 # If so, run this script with the GUI su elevator and show a feedback about
 # the process.  We *could* poll dd to figure out an actual percentage, but
 # that would make things more complicated, so we'll settle for the pulserbar.
-( $gui_su $0 --write "$file" "$device" "$dd_output_file") | zenity --progress \
+( $gui_su "$0" --write "$file" "$device" "$dd_output_file") | zenity --progress \
     --pulsate --auto-close \
     --title "$(eval_gettext "\$script_name: Writing Image...")" \
     --text "$(eval_gettext "The disc image is being written to ")${device}.$(eval_gettext " This will take a while.")"
