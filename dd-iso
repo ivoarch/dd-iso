@@ -1,7 +1,13 @@
 #!/bin/bash
+export TEXTDOMAIN=dd-iso
+export TEXTDOMAINDIR="/usr/share/locale"
+# Set function environments required by GNU gettext system
+. gettext.sh
+
 script_name='DD-ISO'
-version=20140113
+version=20150116
 by='Scott Garrett <mail (at) exovenom.net>'
+contributor='Ivaylo Kuzev <ivkuzev[at]gmail[dot]com>'
 desc='A simple GUI frontend to dd to write ISO disc images to USB drives.'
 
 
@@ -81,17 +87,17 @@ ask_for_usb_drive () {
     # Complain and exit if the array is empty - we didn't find any drives.
     if [[ -z $columns ]]; then
         zenity --error \
-            --title "$script_name: Error" \
-            --text "There doesn't seem to be any USB drives connected to your computer."
+            --title "$(eval_gettext "\$script_name: Error")" \
+            --text "$(eval_gettext 'There doesn'"'"'t seem to be any USB drives connected to your computer.')"
         exit 1
     fi
     # Otherwise, ask the user to choose a device.
     local device=$(zenity --list \
-        --title "$script_name: Step 1: Choose a Target" \
-        --text 'Which USB drive would you like to write the image to?' \
+				--title "$(eval_gettext "\$script_name: Step 1: Choose a Target")" \
+        --text "$(eval_gettext "Which USB drive would you like to write the image to?")" \
         --print-column ALL \
         --separator ' ' \
-        --column 'Device' --column 'Existing Partitions' \
+        --column "$(eval_gettext "Device")" --column "$(eval_gettext "Existing Partitions")" \
         "${columns[@]}")
     # Get rid of pesky spaces in the selection.
     device=${device// /}
@@ -107,7 +113,7 @@ ask_for_usb_drive () {
 # Prompt the user to select an ISO disc image.
 ask_for_iso_file () {
     zenity --file-selection \
-        --title "$script_name: Step 2: Choose a Disk Image File" \
+        --title "$(eval_gettext "\$script_name: Step 2: Choose a Disk Image File")" \
         --file-filter '*.iso'
 }
 
@@ -118,15 +124,9 @@ ask_for_iso_file () {
 #
 ask_for_confirmation () {
     zenity --question \
-        --title "$script_name: Step 3: Confirm Selection" \
-        --text "You have chosen to write the disc image file:
-
-$1
-
-to $2.
-
-This will overwrite the contents of the drive with the disc image.
-Do you wish to proceed?"
+        --title "$(eval_gettext "\$script_name: Step 3: Confirm Selection")" \
+        --text "$(eval_gettext "You have chosen to write the disc image file ")$1$(eval_gettext " to ")$2.$(eval_gettext " This will overwrite the contents of the drive with the disc image.
+Do you wish to proceed?")"
 }
 
 # Figure out what GUI the user has to prompt for root privilages.
@@ -140,8 +140,8 @@ done
 # exit.
 if [[ -z $gui_su && $UID != 0 ]]; then
     zenity --error \
-        --title "$script_name: Privilage Error" \
-        --text 'I need root privilages to write disc images to USB devices, but cannot find beesu, gtksudo, gtksu, or kdesu.'
+        --title "$(eval_gettext "\$script_name: Privilage Error")" \
+        --text "$(eval_gettext "I need root privilages to write disc images to USB devices, but cannot find beesu, gtksudo, gtksu, or kdesu.")"
     exit 1
 fi
 
@@ -164,7 +164,7 @@ case "$1" in
 
         # Complain and exit if we're not already root.
         if ((UID != 0)); then
-            echo "$script_name: this must be executed as root." | tee "$dd_output_file"
+            echo "$(eval_gettext "\$script_name: this must be executed as root.")" | tee "$dd_output_file"
             exit 1
         fi
 
@@ -175,28 +175,24 @@ case "$1" in
         exit
         ;;
     -h|--help)
-        # Handle -h/--help flag and show info about the script.  A heredoc
-        # replaces many `echo`-s here.
-        cat <<HELP_EOF
-$script_name $version - $by
-$desc
-Run without arguments to use the Zenity GUI.
-
--h --help
-    This message.
-
---write DISC_IMAGE TARGET_DEVICE [LOG_FILE]
-    Directly write DISC_IMAGE to TARGET_DEVICE with dd.  Requires root.
-    dd output will be written to LOG_FILE, otherwise to '$script_name-$USER-UNIX_TIMESTAMP'.
-
-HELP_EOF
-        exit 1
-        ;;
+      # Handle -h/--help flag and show info about the script.
+      echo "$script_name $version - $by"
+      echo "$(eval_gettext "A simple GUI frontend to dd to write ISO disc images to USB drives.")"
+      echo "$(eval_gettext "Run without arguments to use the Zenity GUI.")"
+      echo ""
+      echo "-h --help"
+      echo "$(eval_gettext    "This message.")"
+      echo ""
+      echo "--write DISC_IMAGE TARGET_DEVICE [LOG_FILE]"
+      echo "$(eval_gettext "Directly write DISC_IMAGE to TARGET_DEVICE with dd.  Requires root.")"
+      echo "$(eval_gettext "dd output will be written to LOG_FILE, otherwise to ")"$script_name-$USER-UNIX_TIMESTAMP
+      exit 1
+      ;;
 esac
 
 # Complain and exit if the user tries to use the GUI without X.
 if [[ -z $DISPLAY ]]; then
-    echo 'You must be run this script in an X session to use the Zenity GUI.'
+    echo "$(eval_gettext "You must be run this script in an X session to use the Zenity GUI.")"
     exit 1
 fi
 
@@ -215,12 +211,12 @@ ask_for_confirmation "$file" "$device" || exit 1
 # that would make things more complicated, so we'll settle for the pulserbar.
 ( $gui_su $0 --write "$file" "$device" "$dd_output_file") | zenity --progress \
     --pulsate --auto-close \
-    --title "$script_name: Writing Image..." \
-    --text "The disc image is being written to ${device}.  This will take a while."
+    --title "$(eval_gettext "\$script_name: Writing Image...")" \
+    --text "$(eval_gettext "The disc image is being written to ")${device}.$(eval_gettext " This will take a while.")"
 
 # Give the user the status report from dd.
 zenity --info \
-    --title "$script_name: Result" \
+    --title "$(eval_gettext "\$script_name: Result")" \
     --text "$(<"$dd_output_file")"
 
 # Clean up.

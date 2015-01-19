@@ -1,0 +1,132 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: dd-iso\n"
+"Report-Msgid-Bugs-To: ivkuzev@gmail.com\n"
+"POT-Creation-Date: 2015-01-18 14:17+0100\n"
+"PO-Revision-Date: 2015-01-18 14:17+0100\n"
+"Last-Translator: ivoarch <ivkuzev@gmail.com>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: bg\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: dd-iso:90
+#, sh-format
+msgid "$script_name: Error"
+msgstr "$script_name: Error"
+
+#: dd-iso:91
+msgid "There doesn't seem to be any USB drives connected to your computer."
+msgstr "Изглежда, че няма никакви USB устройства, свързани към компютъра."
+
+#: dd-iso:96
+#, sh-format
+msgid "$script_name: Step 1: Choose a Target"
+msgstr "$script_name: Стъпка 1: Изберете Целева"
+
+#: dd-iso:97
+msgid "Which USB drive would you like to write the image to?"
+msgstr "На кой USB-диск искате да запишите изображение?"
+
+#: dd-iso:100
+msgid "Device"
+msgstr "Устройство"
+
+#: dd-iso:100
+msgid "Existing Partitions"
+msgstr "Съществуващи Дяловe"
+
+#: dd-iso:116
+#, sh-format
+msgid "$script_name: Step 2: Choose a Disk Image File"
+msgstr "$script_name: Стъпка 2: Изберете файл с образ на диск"
+
+#: dd-iso:127
+#, sh-format
+msgid "$script_name: Step 3: Confirm Selection"
+msgstr "$script_name: Стъпка 3: Потвърждаване на избора"
+
+
+#: dd-iso:128
+#, sh-format
+msgid "You have chosen to write the disc image file "
+msgstr "Избрали сте да напишете файла с изображението на диска "
+
+#: dd-iso:128
+#, sh-format
+msgid " to "
+msgstr " на "
+
+#: dd-iso:128
+#, sh-format
+msgid ""
+" This will overwrite the contents of the drive with the disc image.\n"
+"Do you wish to proceed?"
+msgstr " Това ще доведе до пренаписване на съдържанието на устройството с образа от диска.\n"
+"Желаете ли да продължите?"
+
+#: dd-iso:150
+#, sh-format
+msgid "$script_name: Privilage Error"
+msgstr "$script_name: Privilage Error"
+
+#: dd-iso:151
+msgid ""
+"I need root privilages to write disc images to USB devices, but cannot find "
+"beesu, gtksudo, gtksu, or kdesu."
+msgstr "Трябват root превилегии за да се запишат дискови изображения на USB устройства, но не са открити beesu, gtksudo, gtksu или kdesu"
+
+#: dd-iso:174
+#, sh-format
+msgid "$script_name: this must be executed as root."
+msgstr "$script_name: това трябва да бъде стартирано като root"
+
+#: dd-iso:187
+#, sh-format
+msgid "A simple GUI frontend to dd to write ISO disc images to USB drives."
+msgstr "Прост GUI интерфейс за dd, който записва ISO дискови изображения на USB устройства."
+
+#: dd-iso:188
+#, sh-format
+msgid "Run without arguments to use the Zenity GUI."
+msgstr "Изпълнете без аргументи за да изпползвате Zenity GUI"
+
+#: dd-iso:191
+#, sh-format
+msgid "This message."
+msgstr "Това събщение"
+
+#: dd-iso:194
+#, sh-format
+msgid "Directly write DISC_IMAGE to TARGET_DEVICE with dd.  Requires root."
+msgstr "Директно пише DISC_IMAGE до TARGET_DEVICE с dd. Изисква root."
+
+#: dd-iso:195
+#, sh-format
+msgid "dd output will be written to LOG_FILE, otherwise to "
+msgstr "dd изхода ще бъде записан на LOG_FILE, в противен случай на "
+
+#: dd-iso:202
+msgid "You must be run this script in an X session to use the Zenity GUI."
+msgstr "Стартирайте този скрипт в X сесия, за да използвате Zenity GUI."
+
+#: dd-iso:221
+#, sh-format
+msgid "$script_name: Writing Image..."
+msgstr "$script_name: Запис на изображение..."
+
+#: dd-iso:222
+#, sh-format
+msgid "The disc image is being written to "
+msgstr "Образа на диска се пише на "
+
+#: dd-iso:222
+#, sh-format
+msgid " This will take a while."
+msgstr " Това ще отнеме известно време."
+
+#: dd-iso:226
+#, sh-format
+msgid "$script_name: Result"
+msgstr "$script_name: Резултат"
