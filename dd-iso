@@ -18,7 +18,7 @@ dd_output_file="/tmp/$script_name-$USER-$(date +%s).log"
 
 
 ##################
-### Funuctions ###
+### Functions ###
 ##################
 
 # Returns a list of all USB block devices.
@@ -71,7 +71,7 @@ ask_for_usb_drive () {
     local columns=()
     # Iterate through the list of USB drive devices.
     while read -r device; do
-        # Add the device to a row.  
+        # Add the device to a row.
         columns+=("$device" ' ')
         while IFS=$'\t' read -r partition name; do
             # Add rows with the path and name of each partition.
@@ -167,7 +167,7 @@ case "$1" in
             echo "$script_name: this must be executed as root." | tee "$dd_output_file"
             exit 1
         fi
-        
+
         # Write the input file to a block device with dd and print an EOF when
         # done.  dd output is redirected to the $dd_output_file.
         dd if="$2" of="$3" bs=1M &> "$dd_output_file"
@@ -207,7 +207,7 @@ device=$(ask_for_usb_drive)
 file=$(ask_for_iso_file)
 [[ -z $file ]] && exit 1
 
-# Are they sure?  
+# Are they sure?
 ask_for_confirmation "$file" "$device" || exit 1
 
 # If so, run this script with the GUI su elevator and show a feedback about
