@@ -130,7 +130,7 @@ Do you wish to proceed?"
 }
 
 # Figure out what GUI the user has to prompt for root privilages.
-for gui_su in kdesu gksudo gksu; do
+for gui_su in beesu gtksudo gtksu kdesu; do
     # `type -p` is a script-friendly way of doing `which EXECUTABLE`.
     gui_su=$(type -p $gui_su)
     # If we found a GUI to prompt for root, bail out of the loop.
@@ -141,7 +141,7 @@ done
 if [[ -z $gui_su && $UID != 0 ]]; then
     zenity --error \
         --title "$script_name: Privilage Error" \
-        --text 'I need root privilages to write disc images to USB devices, but cannot find gtksudo, gtksu, or kdesu.'
+        --text 'I need root privilages to write disc images to USB devices, but cannot find beesu, gtksudo, gtksu, or kdesu.'
     exit 1
 fi
 
