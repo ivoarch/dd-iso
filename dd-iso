@@ -5,7 +5,7 @@ export TEXTDOMAINDIR="/usr/share/locale"
 . gettext.sh
 
 script_name='DD-ISO'
-version=20150116
+version=$(git rev-parse --short HEAD)
 by='Scott Garrett <mail (at) exovenom.net>'
 contributor='Ivaylo Kuzev <ivkuzev[at]gmail[dot]com>'
 desc='A simple GUI frontend to dd to write ISO disc images to USB drives.'
