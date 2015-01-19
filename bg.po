@@ -14,7 +14,7 @@ msgstr ""
 #: dd-iso:90
 #, sh-format
 msgid "$script_name: Error"
-msgstr "$script_name: Error"
+msgstr "$script_name: Грешка"
 
 #: dd-iso:91
 msgid "There doesn't seem to be any USB drives connected to your computer."
